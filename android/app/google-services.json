@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "294254128920",
+    "project_id": "hydr8-wellness-tracker",
+    "storage_bucket": "hydr8-wellness-tracker.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:294254128920:android:29f98f8dd085e49ea1786d",
+        "android_client_info": {
+          "package_name": "com.example.hydrate_tracker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBu57p4p4ExOuvHyA_CG4dM9b9eTT9ogJQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
