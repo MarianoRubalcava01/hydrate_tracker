@@ -8,7 +8,7 @@ class WaterPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color.fromARGB(150, 100, 171, 229) // Adjust opacity here
+      ..color = const Color.fromARGB(200, 100, 170, 230) // Adjust opacity here
       ..style = PaintingStyle.fill;
 
     final fillHeight = size.height * progress;
