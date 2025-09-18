@@ -26,7 +26,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
@@ -37,7 +36,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0; //default value
+  int glassesCount = 0; // Use one variable for the count
   int setGoal = 16; // default goal
 
   final GlobalKey logButtonKey = GlobalKey();
@@ -53,13 +52,13 @@ class _MyHomePageState extends State<MyHomePage> {
       // so that the display can reflect the updated values. If we changed
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
-      if (_counter < setGoal) _counter++;
+      if (glassesCount < setGoal) glassesCount++;
     });
   }
 
   void _resetHydration(){
     setState((){
-      _counter = 0;
+      glassesCount = 0;
     });
   }
   
@@ -77,45 +76,45 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _changeGoalDialog() async {
-  int? newGoal = setGoal;
-  TextEditingController controller = TextEditingController(text: setGoal.toString());
-  await showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: Text('Set Hydration Goal'),
-        content: TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-          decoration: InputDecoration(hintText: 'Enter number of glasses'),
-          onChanged: (value) {
-            newGoal = int.tryParse(value) ?? setGoal;
-          },
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
+    int? newGoal = setGoal;
+    TextEditingController controller = TextEditingController(text: setGoal.toString());
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Set Hydration Goal'),
+          content: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(hintText: 'Enter number of glasses'),
+            onChanged: (value) {
+              newGoal = int.tryParse(value) ?? setGoal;
             },
-            child: Text('Cancel'),
           ),
-          ElevatedButton(
-            onPressed: () {
-              if (newGoal != null && newGoal! > 0) {
-                setState(() {
-                  setGoal = newGoal!;
-                  if (_counter > setGoal) _counter = setGoal;
-                });
-              }
-              Navigator.of(context).pop();
-            },
-            child: Text('Set'),
-          ),
-        ],
-      );
-    },
-  );
-}
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (newGoal != null && newGoal! > 0) {
+                  setState(() {
+                    setGoal = newGoal!;
+                    if (glassesCount > setGoal) glassesCount = setGoal;
+                  });
+                }
+                Navigator.of(context).pop();
+              },
+              child: Text('Set'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   void initState() {
@@ -127,7 +126,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    double progress = _counter / setGoal;
+    double progress = glassesCount / setGoal;
     final screenHeight = MediaQuery.of(context).size.height;
     final waterFillHeight =(screenHeight * progress);
     final buttonHeight = 48.0; 
@@ -161,7 +160,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 SizedBox(
                   height: titleHeight,
                   child: Text(
-                    'Stay Hydrated',
+                    widget.title,
                     key: titleKey,
                     style: TextStyle(
                       fontSize: 44,
@@ -176,7 +175,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 SizedBox(
                   height: buttonHeight,
                   child: Text(
-                    'Glasses today: $_counter / $setGoal',
+                    'Glasses today: $glassesCount / $setGoal',
                     key: glassesTextKey,
                     textAlign: TextAlign.center,
                     style: TextStyle(
