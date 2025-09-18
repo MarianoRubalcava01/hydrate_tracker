@@ -1,0 +1,253 @@
+import 'package:flutter/material.dart';
+import 'water_painter.dart';
+
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
+
+  final String title;
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  int glassesCount = 0; // Use one variable for the count
+  int setGoal = 16; // default goal
+
+  final GlobalKey logButtonKey = GlobalKey();
+  final GlobalKey resetButtonKey = GlobalKey();
+  final GlobalKey titleKey = GlobalKey();
+  final GlobalKey glassesTextKey = GlobalKey(); // Add key for glasses text
+  final GlobalKey changeGoalKey = GlobalKey(); // Add key for change goal button
+
+  void _incrementCounter() {
+    setState(() {
+      // This call to setState tells the Flutter framework that something has
+      // changed in this State, which causes it to rerun the build method below
+      // so that the display can reflect the updated values. If we changed
+      // _counter without calling setState(), then the build method would not be
+      // called again, and so nothing would appear to happen.
+      if (glassesCount < setGoal) glassesCount++;
+    });
+  }
+
+  void _resetHydration(){
+    setState((){
+      glassesCount = 0;
+    });
+  }
+  
+  double getWidgetY(GlobalKey key) {
+    final RenderBox? renderBox = key.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox != null) {
+      final position = renderBox.localToGlobal(Offset.zero);
+      return position.dy;
+    }
+    return -1; // Not found
+  }
+
+  Color getTextColor(double textTop, double waterFillHeight) {
+    return waterFillHeight > textTop - 20? Colors.white : Colors.black;
+  }
+
+  Future<void> _changeGoalDialog() async {
+    int? newGoal = setGoal;
+    TextEditingController controller = TextEditingController(text: setGoal.toString());
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Set Hydration Goal'),
+          content: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(hintText: 'Enter number of glasses'),
+            onChanged: (value) {
+              newGoal = int.tryParse(value) ?? setGoal;
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (newGoal != null && newGoal! > 0) {
+                  setState(() {
+                    setGoal = newGoal!;
+                    if (glassesCount > setGoal) glassesCount = setGoal;
+                  });
+                }
+                Navigator.of(context).pop();
+              },
+              child: Text('Set'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState((){}); // Triggers rebuild after layout
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    double progress = glassesCount / setGoal;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final waterFillHeight =(screenHeight * progress);
+    final buttonHeight = 48.0; 
+    final titleHeight = 60.0;
+
+    final logButtonY = screenHeight - getWidgetY(logButtonKey);
+    final resetButtonY =screenHeight - getWidgetY(resetButtonKey);
+    final titleY = screenHeight - getWidgetY(titleKey);
+    final glassesTextY = screenHeight - getWidgetY(glassesTextKey);
+    final changeGoalTextY = screenHeight - getWidgetY(changeGoalKey);
+
+    final logButtonTextColor = getTextColor(logButtonY, waterFillHeight);
+    final resetButtonTextColor = getTextColor(resetButtonY, waterFillHeight);
+    final titleTextColor = getTextColor(titleY, waterFillHeight);
+    final glassesTextColor = getTextColor(glassesTextY, waterFillHeight);
+    final changeGoalTextColor = getTextColor(changeGoalTextY, waterFillHeight);
+
+    return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+      body: Stack(
+        children: [
+          CustomPaint(
+            size: MediaQuery.of(context).size,
+            painter: WaterPainter(progress),
+          ),
+          Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                
+                SizedBox(
+                  height: titleHeight,
+                  child: Text(
+                    widget.title,
+                    key: titleKey,
+                    style: TextStyle(
+                      fontSize: 44,
+                      fontWeight: FontWeight.bold,
+                      color: titleTextColor,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+
+                SizedBox(height: 32),
+                SizedBox(
+                  height: buttonHeight,
+                  child: Text(
+                    'Glasses today: $glassesCount / $setGoal',
+                    key: glassesTextKey,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                      color: glassesTextColor,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 24),
+                SizedBox(
+                  width: 160,
+                  height: buttonHeight,
+                  child: ElevatedButton(
+                    key: logButtonKey,
+                    onPressed: _incrementCounter,
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      backgroundColor: Colors.transparent,
+                      foregroundColor: logButtonTextColor,
+                      elevation: 0,
+                      shadowColor: Colors.transparent,
+                      overlayColor: Colors.transparent,
+                    ),
+                    child: Text(
+                      'Log a glass',
+                      style: TextStyle(
+                        color: logButtonTextColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 24,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: 12),
+                SizedBox(
+                  width: 160,
+                  height: buttonHeight,
+                  child: ElevatedButton(
+                    key: resetButtonKey,
+                    onPressed: _resetHydration,
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      backgroundColor: Colors.transparent,
+                      foregroundColor: resetButtonTextColor,
+                      elevation: 0,
+                      shadowColor: Colors.transparent,
+                      overlayColor: Colors.transparent,
+                    ),
+                    child: Text(
+                      'Reset',
+                      style: TextStyle(
+                        color: resetButtonTextColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 24,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 12),
+                SizedBox(
+                  width: 180,
+                  height: buttonHeight,
+                  child: ElevatedButton(
+                    key:changeGoalKey,
+                    onPressed: _changeGoalDialog,
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      backgroundColor: Colors.transparent,
+                      foregroundColor: Colors.black,
+                      elevation: 0,
+                      shadowColor: Colors.transparent,
+                      overlayColor: Colors.transparent,
+                    ),
+                    child: Text(
+                      'Change Goal',
+                      style: TextStyle(
+                        color: changeGoalTextColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 24,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
